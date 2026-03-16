@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Exam – Level 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f5f0e8;--ink:#1a1410;--muted:#7a6f62;
+  --accent:#c0392b;--accent2:#2471a3;
+  --correct:#1e8449;--wrong:#c0392b;
+  --border:#d8cfc0;--card:#fff;
+  --shadow:0 2px 20px rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;}
+
+/* ══ WELCOME SCREEN ══ */
+#welcome-screen{
+  display:flex;min-height:100vh;
+  background:linear-gradient(135deg,#1a1410 0%,#2c1810 50%,#1a1410 100%);
+  position:relative;overflow:hidden;
+}
+#welcome-screen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(192,57,43,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.welcome-left{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:60px 48px;position:relative;z-index:2;
+}
+.welcome-right{
+  width:460px;display:flex;align-items:center;justify-content:center;
+  padding:40px;position:relative;z-index:2;
+}
+@media(max-width:768px){
+  #welcome-screen{flex-direction:column;}
+  .welcome-right{width:100%;padding:0 20px 40px;}
+  .welcome-left{padding:40px 20px 20px;}
+}
+
+.school-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:20px;padding:6px 16px;margin-bottom:24px;
+}
+.school-badge span{font-size:.78rem;color:#ccc;font-weight:500;letter-spacing:.5px;}
+
+.welcome-title{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.2rem,5vw,3.4rem);
+  color:#fff;line-height:1.1;margin-bottom:16px;
+}
+.welcome-title em{color:var(--accent);font-style:normal;}
+.welcome-sub{font-size:1rem;color:#bbb;line-height:1.65;max-width:420px;margin-bottom:32px;}
+
+.info-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:0;}
+.pill{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
+  border-radius:6px;padding:8px 14px;font-size:.8rem;color:#ccc;
+  display:flex;align-items:center;gap:6px;
+}
+.pill strong{color:#fff;}
+
+/* Name form card */
+.name-card{
+  background:#fff;border-radius:16px;padding:36px 32px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);width:100%;max-width:400px;
+}
+.name-card h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ink);margin-bottom:6px;}
+.name-card p{font-size:.83rem;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:.78rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.field input{
+  width:100%;border:1.5px solid var(--border);border-radius:8px;
+  padding:11px 14px;font-size:.93rem;font-family:'DM Sans',sans-serif;
+  color:var(--ink);background:#fafafa;transition:border .16s,box-shadow .16s;
+}
+.field input:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(36,113,163,.12);}
+.field input.error{border-color:var(--accent);animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.name-preview{
+  background:#f5f0e8;border-radius:6px;padding:10px 14px;
+  font-size:.83rem;color:var(--muted);margin-bottom:20px;min-height:38px;
+  border:1px solid var(--border);
+}
+.name-preview strong{color:var(--ink);}
+
+.start-btn{
+  width:100%;padding:13px;background:var(--accent);color:#fff;
+  border:none;border-radius:8px;font-size:.95rem;font-weight:700;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  transition:background .18s,transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.start-btn:hover{background:#a93226;transform:translateY(-1px);}
+.start-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+.error-msg{font-size:.78rem;color:var(--accent);margin-top:4px;display:none;}
+
+/* ══ BLOCKED SCREEN ══ */
+#blocked-screen{
+  display:none;position:fixed;inset:0;
+  background:var(--ink);z-index:9999;
+  flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px;color:#fff;
+}
+#blocked-screen h1{font-family:'Playfair Display',serif;font-size:2.1rem;margin-bottom:14px;}
+#blocked-screen p{color:#bbb;max-width:480px;line-height:1.75;font-size:.95rem;}
+.lock-icon{font-size:5rem;margin-bottom:22px;}
+.prev-score-box{margin-top:28px;background:rgba(255,255,255,.08);border-radius:10px;padding:20px 40px;}
+.prev-score-box strong{font-size:2.4rem;color:var(--accent);display:block;margin-bottom:4px;}
+
+/* ══ EXAM WRAPPER ══ */
+#exam-wrapper{display:none;}
+
+/* ══ HEADER ══ */
+header{background:var(--ink);color:#fff;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:4px solid var(--accent);}
+.header-left h1{font-family:'Playfair Display',serif;font-size:1.55rem;}
+.header-left .student-name-tag{font-size:.78rem;color:#aaa;margin-top:2px;}
+.score-badge{background:var(--accent);color:#fff;padding:9px 18px;border-radius:4px;font-size:.92rem;font-weight:600;text-align:center;min-width:96px;}
+.score-badge small{display:block;font-size:.66rem;opacity:.85;}
+
+.progress-wrap{background:#2d2d2d;height:4px;position:sticky;top:80px;z-index:99;}
+.progress-bar{height:4px;background:var(--accent);transition:width .4s;width:0;}
+
+/* ══ MAIN ══ */
+main{max-width:820px;margin:0 auto;padding:36px 18px 80px;}
+
+/* ══ SECTION ══ */
+.section{background:var(--card);border-radius:10px;box-shadow:var(--shadow);margin-bottom:28px;overflow:hidden;border:1px solid var(--border);opacity:0;transform:translateY(14px);animation:fadeUp .5s ease forwards;}
+.section:nth-child(1){animation-delay:.04s}.section:nth-child(2){animation-delay:.10s}
+.section:nth-child(3){animation-delay:.16s}.section:nth-child(4){animation-delay:.22s}
+.section:nth-child(5){animation-delay:.28s}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+.section-header{background:var(--ink);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px;}
+.section-icon{width:32px;height:32px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0;}
+.section-header h2{font-family:'Playfair Display',serif;font-size:1.05rem;}
+.section-points{margin-left:auto;font-size:.74rem;color:#aaa;font-weight:500;}
+.section-body{padding:22px;}
+
+/* PASSAGE */
+.passage{background:#faf8f4;border-left:4px solid var(--accent);border-radius:4px;padding:15px 18px;margin-bottom:18px;font-size:.89rem;line-height:1.8;}
+.passage h3{font-family:'Playfair Display',serif;font-size:.95rem;margin-bottom:6px;color:var(--accent);}
+
+/* GROUP TITLE */
+.q-group-title{font-size:.74rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:18px 0 10px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+
+/* QUESTION */
+.question{margin-bottom:17px;}
+.question label{display:block;font-weight:500;font-size:.9rem;margin-bottom:7px;line-height:1.5;}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:6px;}
+.option{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s;font-size:.86rem;user-select:none;}
+.option:hover{border-color:var(--accent2);background:#eaf4fb;}
+.option input[type=radio]{accent-color:var(--accent2);width:14px;height:14px;flex-shrink:0;}
+.option.correct{border-color:var(--correct);background:#eafaf1;color:var(--correct);font-weight:600;}
+.option.wrong{border-color:var(--wrong);background:#fdedec;color:var(--wrong);}
+
+/* INPUTS */
+.fill-input{border:1.5px solid var(--border);border-radius:6px;padding:7px 12px;font-size:.87rem;font-family:'DM Sans',sans-serif;width:100%;max-width:340px;background:#fafafa;color:var(--ink);transition:border .15s;}
+.fill-input:focus{outline:none;border-color:var(--accent2);}
+.fill-input.correct{border-color:var(--correct);background:#eafaf1;}
+.fill-input.wrong{border-color:var(--wrong);background:#fdedec;}
+
+.inline-sentence{display:flex;align-items:center;flex-wrap:wrap;gap:5px;font-size:.89rem;line-height:2.2;}
+.inline-input{border:none;border-bottom:2px solid var(--accent2);background:transparent;font-size:.89rem;font-family:'DM Sans',sans-serif;color:var(--ink);padding:1px 4px;min-width:72px;text-align:center;}
+.inline-input:focus{outline:none;border-color:var(--accent);}
+.inline-input.correct{border-color:var(--correct);color:var(--correct);font-weight:600;}
+.inline-input.wrong{border-color:var(--wrong);color:var(--wrong);}
+
+.inline-select{border:none;border-bottom:2px solid var(--accent2);background:transparent;font-size:.89rem;font-family:'DM Sans',sans-serif;color:var(--ink);padding:1px 4px;cursor:pointer;}
+.inline-select:focus{outline:none;}
+.inline-select.correct{border-color:var(--correct);color:var(--correct);font-weight:600;}
+.inline-select.wrong{border-color:var(--wrong);color:var(--wrong);}
+
+/* VERB BUTTONS */
+.verb-choice{display:flex;gap:7px;flex-wrap:wrap;}
+.verb-btn{border:1.5px solid var(--border);border-radius:20px;padding:4px 13px;cursor:pointer;background:#fafafa;font-size:.84rem;font-weight:500;transition:all .14s;font-family:'DM Sans',sans-serif;}
+.verb-btn:hover{border-color:var(--accent2);background:#eaf4fb;}
+.verb-btn.selected{border-color:var(--accent2);background:var(--accent2);color:#fff;}
+.verb-btn.correct{border-color:var(--correct);background:var(--correct);color:#fff;}
+.verb-btn.wrong{border-color:var(--wrong);background:var(--wrong);color:#fff;}
+
+/* FEEDBACK */
+.feedback{display:none;font-size:.77rem;margin-top:5px;font-weight:600;}
+.feedback.correct{color:var(--correct);}
+.feedback.wrong{color:var(--wrong);}
+
+/* DICTATION */
+.dictate-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dictate-num{font-weight:700;font-size:.9rem;color:var(--muted);min-width:18px;}
+.dictate-input{flex:1;min-width:140px;max-width:270px;}
+.audio-btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent2);color:#fff;border:none;border-radius:6px;padding:7px 13px;font-size:.8rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.audio-btn:hover{background:#1a5f8a;transform:translateY(-1px);}
+.audio-btn.playing{background:var(--accent);animation:pulse-btn .6s ease infinite alternate;}
+@keyframes pulse-btn{from{box-shadow:0 0 0 0 rgba(192,57,43,.4)}to{box-shadow:0 0 0 8px rgba(192,57,43,0)}}
+
+/* CLOCKS */
+.clock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:14px;margin-top:8px;}
+.clock-card{background:#faf8f4;border:1.5px solid var(--border);border-radius:10px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.clock-card .clock-num{font-weight:700;font-size:.8rem;color:var(--muted);}
+.clock-card .fill-input{text-align:center;max-width:100%;font-size:.78rem;padding:6px 8px;}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:12px;margin-top:24px;justify-content:flex-end;}
+.btn{padding:11px 24px;border:none;border-radius:6px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#a93226;transform:translateY(-1px);}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+
+/* ══ RESULTS ══ */
+#results{display:none;border-radius:12px;overflow:hidden;margin-bottom:40px;border:1px solid var(--border);box-shadow:var(--shadow);animation:fadeUp .4s ease;}
+
+.results-hero{background:var(--ink);color:#fff;padding:36px 32px 28px;text-align:center;}
+.results-hero h2{font-family:'Playfair Display',serif;font-size:1.75rem;margin-bottom:4px;}
+.student-congrats{font-size:.95rem;color:#bbb;margin-bottom:18px;}
+.student-congrats strong{color:#fff;}
+.grade-ring{width:112px;height:112px;border-radius:50%;border:5px solid var(--accent);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 8px;}
+.grade-ring .pts{font-size:2rem;font-weight:700;color:#fff;line-height:1;}
+.grade-ring .tot{font-size:.72rem;color:#aaa;margin-top:2px;}
+.grade-letter{font-size:2.6rem;font-weight:700;color:var(--accent);margin-top:2px;}
+.grade-pct{font-size:.92rem;color:#bbb;margin-top:2px;}
+.section-scores{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:20px;}
+.ss-card{background:rgba(255,255,255,.07);border-radius:6px;padding:10px 14px;text-align:left;}
+.ss-card .label{font-size:.7rem;color:#999;margin-bottom:2px;}
+.ss-card .val{font-size:1.15rem;font-weight:700;}
+
+.results-body{background:#fff;padding:26px 30px;}
+.results-body h3{font-family:'Playfair Display',serif;font-size:1.08rem;margin-bottom:11px;}
+.feedback-band{border-radius:8px;padding:15px 18px;margin-bottom:10px;border-left:5px solid;}
+.feedback-band.excellent{border-color:#1e8449;background:#eafaf1;}
+.feedback-band.good{border-color:#2471a3;background:#eaf4fb;}
+.feedback-band.average{border-color:#d4ac0d;background:#fefbd8;}
+.feedback-band.low{border-color:#c0392b;background:#fdedec;}
+.feedback-band .band-title{font-weight:700;font-size:.95rem;margin-bottom:4px;}
+.feedback-band p{font-size:.87rem;line-height:1.65;color:#333;}
+.section-feedback{margin-top:16px;}
+.sf-item{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;font-size:.85rem;line-height:1.55;}
+.sf-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.sf-dot.good{background:var(--correct);}
+.sf-dot.bad{background:var(--wrong);}
+
+.pdf-btn{
+  margin-top:20px;width:100%;padding:13px;
+  background:linear-gradient(135deg,#1a1410,#3a2418);
+  color:#fff;border:none;border-radius:8px;
+  font-size:.92rem;font-weight:700;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.pdf-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25);}
+.pdf-btn svg{flex-shrink:0;}
+
+@media(max-width:600px){
+  header{padding:14px 14px;}
+  .header-left h1{font-size:1.2rem;}
+  .section-body{padding:14px;}
+  .section-scores{grid-template-columns:1fr;}
+  .results-body{padding:18px;}
+  .clock-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ BLOCKED ══════════════════ -->
+<div id="blocked-screen">
+  <div class="lock-icon">🔒</div>
+  <h1>Examen ya realizado</h1>
+  <p>Este examen solo puede completarse <strong>una vez</strong> por dispositivo. Ya registraste tu intento. Si crees que esto es un error, comunícate con tu docente.</p>
+  <div class="prev-score-box">
+    <strong id="bs-score">—</strong>
+    Calificación registrada
+  </div>
+</div>
+
+<!-- ══════════════════ WELCOME ══════════════════ -->
+<div id="welcome-screen">
+  <div class="welcome-left">
+    <div class="school-badge">
+      <span>🎓</span>
+      <span>ENGLISH PROGRAM · LEVEL 1</span>
+    </div>
+    <h1 class="welcome-title">
+      Bienvenido al<br><em>Examen de Inglés</em>
+    </h1>
+    <p class="welcome-sub">
+      Este examen evalúa tus conocimientos en Listening, Reading, Vocabulario, Gramática y la lectura de la hora. Lee cada instrucción con atención antes de responder.
+    </p>
+    <div class="info-pills">
+      <div class="pill">🎧 <strong>Listening</strong> · 5 pts</div>
+      <div class="pill">📖 <strong>Reading</strong> · 5 pts</div>
+      <div class="pill">📝 <strong>Vocabulary</strong> · 14 pts</div>
+      <div class="pill">🔤 <strong>Grammar</strong> · 17 pts</div>
+      <div class="pill">🕐 <strong>Time</strong> · 5 pts</div>
+      <div class="pill">📊 <strong>Total: 46 puntos</strong></div>
+      <div class="pill">⚠️ Solo <strong>1 intento</strong> permitido</div>
+    </div>
+  </div>
+
+  <div class="welcome-right">
+    <div class="name-card">
+      <h2>Datos del alumno</h2>
+      <p>Escribe tu nombre completo antes de iniciar. Una vez registrado, <strong>no podrás cambiar tus datos</strong>.</p>
+
+      <div class="field">
+        <label>Apellido Paterno</label>
+        <input type="text" id="ap-paterno" placeholder="Ej. García" oninput="updatePreview()" autocomplete="off">
+        <div class="error-msg" id="err-paterno">Este campo es obligatorio.</div>
+      </div>
+      <div class="field">
+        <label>Apellido Materno</label>
+        <input type="text" id="ap-materno" placeholder="Ej. López" oninput="updatePreview()" autocomplete="off">
+        <div class="error-msg" id="err-materno">Este campo es obligatorio.</div>
+      </div>
+      <div class="field">
+        <label>Nombre(s)</label>
+        <input type="text" id="nombre" placeholder="Ej. Ana Sofía" oninput="updatePreview()" autocomplete="off">
+        <div class="error-msg" id="err-nombre">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="name-preview" id="name-preview">
+        <span style="color:var(--muted);">Tu nombre aparecerá aquí…</span>
+      </div>
+
+      <button class="start-btn" onclick="startExam()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Iniciar Examen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ EXAM ══════════════════ -->
+<div id="exam-wrapper">
+
+<header>
+  <div class="header-left">
+    <h1>English Exam – Level 1</h1>
+    <div class="student-name-tag" id="header-name">Alumno: —</div>
+  </div>
+  <div class="score-badge" id="liveBadge"><small>Score</small>– / 46</div>
+</header>
+<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+<main>
+
+<!-- LISTENING -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🎧</div>
+    <div><h2>Listening</h2></div>
+    <div class="section-points">5 pts</div>
+  </div>
+  <div class="section-body">
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:14px;">Escucha la conversación y <strong>arrastra</strong> las oraciones al orden correcto (1 = primera).</p>
+    <div style="background:#faf8f4;border:1.5px dashed var(--border);border-radius:7px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:1.5rem;">🔊</div>
+      <div><div style="font-weight:600;font-size:.85rem;">Audio – Conversación</div><div style="font-size:.75rem;color:var(--muted);margin-top:1px;">Sube el audio en Moodle y enlázalo aquí.</div></div>
+    </div>
+    <div class="q-group-title">Arrastra para ordenar</div>
+    <div id="sortable-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <div class="feedback" id="listen-fb" style="margin-top:11px;font-size:.85rem;"></div>
+  </div>
+</div>
+
+<!-- READING -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📖</div>
+    <div><h2>Reading</h2></div>
+    <div class="section-points">5 pts</div>
+  </div>
+  <div class="section-body">
+    <div class="passage">
+      <h3>Carly's Family</h3>
+      <p>Carly has a large family. She lives with four people. Carly also has two pets.</p>
+      <p style="margin-top:6px;">Carly's mom is a doctor. She works at the hospital and helps sick people. Carly's dad works at home — he cooks for the family and drives the kids to soccer practice.</p>
+      <p style="margin-top:6px;">Carly has two brothers: James (10) and Scott (14). Her pets are Jinx, a small black cat, and Diego, a large brown dog. Carly loves her family!</p>
+    </div>
+    <div class="question"><label>1) How many people are in Carly's family?</label>
+      <div class="options">
+        <label class="option"><input type="radio" name="rq1" value="A"> A. four</label>
+        <label class="option"><input type="radio" name="rq1" value="B"> B. five</label>
+        <label class="option"><input type="radio" name="rq1" value="C"> C. six</label>
+      </div><div class="feedback" id="rq1-fb"></div></div>
+    <div class="question"><label>2) Carly's mom works at the</label>
+      <div class="options">
+        <label class="option"><input type="radio" name="rq2" value="A"> A. restaurant</label>
+        <label class="option"><input type="radio" name="rq2" value="B"> B. mall</label>
+        <label class="option"><input type="radio" name="rq2" value="C"> C. hospital</label>
+      </div><div class="feedback" id="rq2-fb"></div></div>
+    <div class="question"><label>3) This passage is mostly about Carly's</label>
+      <div class="options">
+        <label class="option"><input type="radio" name="rq3" value="A"> A. family</label>
+        <label class="option"><input type="radio" name="rq3" value="B"> B. pets</label>
+        <label class="option"><input type="radio" name="rq3" value="C"> C. soccer team</label>
+      </div><div class="feedback" id="rq3-fb"></div></div>
+    <div class="question"><label>4) Which of the following is most likely true?</label>
+      <div class="options">
+        <label class="option"><input type="radio" name="rq4" value="A"> A. Carly's mom coaches the soccer team.</label>
+        <label class="option"><input type="radio" name="rq4" value="B"> B. James is the best soccer player in the family.</label>
+        <label class="option"><input type="radio" name="rq4" value="C"> C. Jinx and Diego are part of Carly's family.</label>
+      </div><div class="feedback" id="rq4-fb"></div></div>
+    <div class="question"><label>5) The oldest brother in Carly's family is</label>
+      <div class="options">
+        <label class="option"><input type="radio" name="rq5" value="A"> A. James</label>
+        <label class="option"><input type="radio" name="rq5" value="B"> B. Scott</label>
+        <label class="option"><input type="radio" name="rq5" value="C"> C. Diego</label>
+      </div><div class="feedback" id="rq5-fb"></div></div>
+  </div>
+</div>
+
+<!-- VOCABULARY -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">📝</div>
+    <div><h2>Vocabulary</h2></div>
+    <div class="section-points">14 pts</div>
+  </div>
+  <div class="section-body">
+    <div class="q-group-title">🔊 Escucha y escribe la palabra</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px;">Presiona el botón para escuchar y escribe la palabra completa.</p>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">1.</span><button class="audio-btn" onclick="speakWord('parents',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq1-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq1-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">2.</span><button class="audio-btn" onclick="speakWord('cousins',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq2-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq2-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">3.</span><button class="audio-btn" onclick="speakWord('uncle',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq3-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq3-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">4.</span><button class="audio-btn" onclick="speakWord('daughter',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq4-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq4-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">5.</span><button class="audio-btn" onclick="speakWord('kitchen',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq5-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq5-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">6.</span><button class="audio-btn" onclick="speakWord('bathroom',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq6-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq6-fb"></div></div>
+    <div class="question"><div class="dictate-row"><span class="dictate-num">7.</span><button class="audio-btn" onclick="speakWord('dining room',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Escuchar</button><input type="text" class="fill-input dictate-input" id="vq7-in" placeholder="Escribe…" autocomplete="off"></div><div class="feedback" id="vq7-fb"></div></div>
+    <div class="q-group-title">Complete la secuencia</div>
+    <div class="question"><label>1. Monday, Tuesday, ___________</label><input type="text" class="fill-input" id="vq8-in" placeholder="Type…"><div class="feedback" id="vq8-fb"></div></div>
+    <div class="question"><label>2. ___________, Friday, Saturday</label><input type="text" class="fill-input" id="vq9-in" placeholder="Type…"><div class="feedback" id="vq9-fb"></div></div>
+    <div class="question"><label>3. July, ___________, September</label><input type="text" class="fill-input" id="vq10-in" placeholder="Type…"><div class="feedback" id="vq10-fb"></div></div>
+    <div class="question"><label>4. November, December, ___________</label><input type="text" class="fill-input" id="vq11-in" placeholder="Type…"><div class="feedback" id="vq11-fb"></div></div>
+    <div class="question"><label>5. ___________, March, April</label><input type="text" class="fill-input" id="vq12-in" placeholder="Type…"><div class="feedback" id="vq12-fb"></div></div>
+  </div>
+</div>
+
+<!-- GRAMMAR -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🔤</div>
+    <div><h2>Grammar</h2></div>
+    <div class="section-points">17 pts</div>
+  </div>
+  <div class="section-body">
+    <div class="q-group-title">Verbo "to be"</div>
+    <div class="question"><label>1. Mariana and Richard ___ married.</label>
+      <div class="inline-sentence"><span>Mariana and Richard</span><input type="text" class="inline-input" id="gq1-in" placeholder="___"><span>married.</span></div><div class="feedback" id="gq1-fb"></div></div>
+    <div class="question"><label>2. It ___ cold outside but they ___ still playing.</label>
+      <div class="inline-sentence"><span>It</span><input type="text" class="inline-input" id="gq2a-in" placeholder="___"><span>cold outside but they</span><input type="text" class="inline-input" id="gq2b-in" placeholder="___"><span>still playing.</span></div><div class="feedback" id="gq2-fb"></div></div>
+    <div class="question"><label>3. The English class ___ not difficult for me.</label>
+      <div class="inline-sentence"><span>The English class</span><input type="text" class="inline-input" id="gq3-in" placeholder="___"><span>not difficult for me.</span></div><div class="feedback" id="gq3-fb"></div></div>
+    <div class="q-group-title">Pronombres</div>
+    <div class="question"><label>1. My job is wonderful. I really like ___!</label>
+      <div class="verb-choice" id="pq1"><button class="verb-btn" onclick="selectVerb(this,'pq1','it')">it</button><button class="verb-btn" onclick="selectVerb(this,'pq1','me')">me</button><button class="verb-btn" onclick="selectVerb(this,'pq1','them')">them</button></div><div class="feedback" id="gq4-fb"></div></div>
+    <div class="question"><label>2. ___ Spanish class starts at 5 pm.</label>
+      <div class="verb-choice" id="pq2"><button class="verb-btn" onclick="selectVerb(this,'pq2','yours')">yours</button><button class="verb-btn" onclick="selectVerb(this,'pq2','him')">him</button><button class="verb-btn" onclick="selectVerb(this,'pq2','our')">our</button></div><div class="feedback" id="gq5-fb"></div></div>
+    <div class="question"><label>3. Call ___ when you arrive home. We are worried.</label>
+      <div class="verb-choice" id="pq3"><button class="verb-btn" onclick="selectVerb(this,'pq3','our')">our</button><button class="verb-btn" onclick="selectVerb(this,'pq3','me')">me</button><button class="verb-btn" onclick="selectVerb(this,'pq3','us')">us</button></div><div class="feedback" id="gq6-fb"></div></div>
+    <div class="question"><label>4. Can you explain ___ how it works? They are new.</label>
+      <div class="verb-choice" id="pq4"><button class="verb-btn" onclick="selectVerb(this,'pq4','him')">him</button><button class="verb-btn" onclick="selectVerb(this,'pq4','them')">them</button><button class="verb-btn" onclick="selectVerb(this,'pq4','me')">me</button></div><div class="feedback" id="gq7-fb"></div></div>
+    <div class="question"><label>5. He buys ___ roses because it's her birthday.</label>
+      <div class="verb-choice" id="pq5"><button class="verb-btn" onclick="selectVerb(this,'pq5','us')">us</button><button class="verb-btn" onclick="selectVerb(this,'pq5','her')">her</button><button class="verb-btn" onclick="selectVerb(this,'pq5','you')">you</button></div><div class="feedback" id="gq8-fb"></div></div>
+    <div class="q-group-title">Have / Has</div>
+    <div class="question"><label>1. My mother ___ a chocolate bar in the fridge.</label>
+      <div class="verb-choice" id="vb1"><button class="verb-btn" onclick="selectVerb(this,'vb1','have')">have</button><button class="verb-btn" onclick="selectVerb(this,'vb1','has')">has</button></div><div class="feedback" id="gq9-fb"></div></div>
+    <div class="question"><label>2. They ___ two children, they are 7 and 6.</label>
+      <div class="verb-choice" id="vb2"><button class="verb-btn" onclick="selectVerb(this,'vb2','has')">has</button><button class="verb-btn" onclick="selectVerb(this,'vb2','have')">have</button></div><div class="feedback" id="gq10-fb"></div></div>
+    <div class="question"><label>3. Lynn's father likes soccer, but he ___ time to practice.</label>
+      <div class="verb-choice" id="vb3"><button class="verb-btn" onclick="selectVerb(this,'vb3','doesn\'t have')">doesn't have</button><button class="verb-btn" onclick="selectVerb(this,'vb3','don\'t have')">don't have</button></div><div class="feedback" id="gq11-fb"></div></div>
+    <div class="question"><label>4. You ___ to wear a uniform here.</label>
+      <div class="verb-choice" id="vb4"><button class="verb-btn" onclick="selectVerb(this,'vb4','doesn\'t have')">doesn't have</button><button class="verb-btn" onclick="selectVerb(this,'vb4','don\'t have')">don't have</button></div><div class="feedback" id="gq12-fb"></div></div>
+    <div class="question"><label>5. We ___ a cat and a dog, we love pets!</label>
+      <div class="verb-choice" id="vb5"><button class="verb-btn" onclick="selectVerb(this,'vb5','has')">has</button><button class="verb-btn" onclick="selectVerb(this,'vb5','have')">have</button></div><div class="feedback" id="gq13-fb"></div></div>
+    <div class="q-group-title">Preposiciones (in / at / on)</div>
+    <div class="question"><label>1. Mark gets up ___ 8:00 a.m.</label>
+      <div class="inline-sentence"><span>Mark gets up</span><select class="inline-select" id="prep1"><option value="">—</option><option>in</option><option>at</option><option>on</option></select><span>8:00 a.m.</span></div><div class="feedback" id="gq14-fb"></div></div>
+    <div class="question"><label>2. Families usually gather ___ Christmas day.</label>
+      <div class="inline-sentence"><span>Families usually gather</span><select class="inline-select" id="prep2"><option value="">—</option><option>in</option><option>at</option><option>on</option></select><span>Christmas day.</span></div><div class="feedback" id="gq15-fb"></div></div>
+    <div class="question"><label>3. We are planning to go out ___ the evening.</label>
+      <div class="inline-sentence"><span>We are planning to go out</span><select class="inline-select" id="prep3"><option value="">—</option><option>in</option><option>at</option><option>on</option></select><span>the evening.</span></div><div class="feedback" id="gq16-fb"></div></div>
+    <div class="question"><label>4. This amusement park was built ___ 1929.</label>
+      <div class="inline-sentence"><span>This amusement park was built</span><select class="inline-select" id="prep4"><option value="">—</option><option>in</option><option>at</option><option>on</option></select><span>1929.</span></div><div class="feedback" id="gq17-fb"></div></div>
+    <div class="question"><label>5. I celebrate my birthday ___ October.</label>
+      <div class="inline-sentence"><span>I celebrate my birthday</span><select class="inline-select" id="prep5"><option value="">—</option><option>in</option><option>at</option><option>on</option></select><span>October.</span></div><div class="feedback" id="gq18-fb"></div></div>
+  </div>
+</div>
+
+<!-- WHAT TIME IS IT -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon">🕐</div>
+    <div><h2>What time is it?</h2></div>
+    <div class="section-points">5 pts</div>
+  </div>
+  <div class="section-body">
+    <p style="font-size:.87rem;color:var(--muted);margin-bottom:16px;">Observa cada reloj y escribe la hora en inglés.<br><span style="font-size:.78rem;">Ej: <em>"It's three o'clock"</em> · <em>"It's half past seven"</em> · <em>"It's quarter past ten"</em></span></p>
+    <div class="clock-grid" id="clock-grid"></div>
+    <div class="feedback" id="clock-fb" style="margin-top:8px;font-size:.84rem;"></div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <button class="btn btn-primary" id="submit-btn" onclick="checkAll()">✅ Enviar y ver calificación</button>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="results-hero">
+    <h2>¡Examen Completado! 🎓</h2>
+    <p class="student-congrats" id="student-congrats">—</p>
+    <div class="grade-ring">
+      <span class="pts" id="finalScore">0</span>
+      <span class="tot">/ 46</span>
+    </div>
+    <div class="grade-letter" id="gradeLetter">—</div>
+    <div class="grade-pct" id="gradePct">—</div>
+    <div class="section-scores">
+      <div class="ss-card"><div class="label">🎧 Listening</div><div class="val" id="sc-listen">0/5</div></div>
+      <div class="ss-card"><div class="label">📖 Reading</div><div class="val" id="sc-reading">0/5</div></div>
+      <div class="ss-card"><div class="label">📝 Dictado</div><div class="val" id="sc-dict">0/7</div></div>
+      <div class="ss-card"><div class="label">📝 Secuencias</div><div class="val" id="sc-seq">0/5</div></div>
+      <div class="ss-card"><div class="label">🔤 To Be</div><div class="val" id="sc-be">0/4</div></div>
+      <div class="ss-card"><div class="label">🔤 Pronombres</div><div class="val" id="sc-pron">0/5</div></div>
+      <div class="ss-card"><div class="label">🔤 Have/Has</div><div class="val" id="sc-hv">0/5</div></div>
+      <div class="ss-card"><div class="label">🔤 Preposiciones</div><div class="val" id="sc-prep">0/5</div></div>
+      <div class="ss-card"><div class="label">🕐 What time is it?</div><div class="val" id="sc-clock">0/5</div></div>
+    </div>
+  </div>
+  <div class="results-body">
+    <h3>📋 Retroalimentación personalizada</h3>
+    <div id="feedback-band-wrap"></div>
+    <div class="section-feedback" id="section-feedback-list"></div>
+    <button class="pdf-btn" onclick="downloadPDF()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Descargar Reporte en PDF
+    </button>
+  </div>
+</div>
+
+</main>
+</div><!-- end exam-wrapper -->
+
+<script>
+// ══════════════════════════════════════════
+//  STUDENT DATA & LOCK
+// ══════════════════════════════════════════
+const EXAM_KEY='examEnglishL1_v2';
+let studentFullName='';
+let examResults=null;
+
+window.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const saved=localStorage.getItem(EXAM_KEY);
+    if(saved){
+      const d=JSON.parse(saved);
+      document.getElementById('bs-score').textContent=`${d.name} — ${d.score}/46 pts (${d.grade})`;
+      document.getElementById('blocked-screen').style.display='flex';
+    }
+  }catch(e){}
+});
+
+function capitalize(s){return s?s.trim().replace(/\b\w/g,(c)=>c.toUpperCase()):'';}
+
+function updatePreview(){
+  const p=capitalize(document.getElementById('ap-paterno').value);
+  const m=capitalize(document.getElementById('ap-materno').value);
+  const n=capitalize(document.getElementById('nombre').value);
+  const full=[p,m,n].filter(Boolean).join(' ');
+  const prev=document.getElementById('name-preview');
+  prev.innerHTML=full?`<strong>${full}</strong>`:`<span style="color:var(--muted);">Tu nombre aparecerá aquí…</span>`;
+}
+
+function startExam(){
+  const p=document.getElementById('ap-paterno').value.trim();
+  const m=document.getElementById('ap-materno').value.trim();
+  const n=document.getElementById('nombre').value.trim();
+  let ok=true;
+  ['ap-paterno','ap-materno','nombre'].forEach((id,i)=>{
+    const v=[p,m,n][i];
+    const el=document.getElementById(id);
+    const err=document.getElementById('err-'+['paterno','materno','nombre'][i]);
+    if(!v){el.classList.add('error');err.style.display='block';ok=false;}
+    else{el.classList.remove('error');err.style.display='none';}
+  });
+  if(!ok)return;
+  studentFullName=`${capitalize(p)} ${capitalize(m)} ${capitalize(n)}`;
+  document.getElementById('header-name').textContent=`Alumno: ${studentFullName}`;
+  document.getElementById('welcome-screen').style.display='none';
+  document.getElementById('exam-wrapper').style.display='block';
+  window.scrollTo(0,0);
+  buildSortable();
+  buildClocks();
+}
+
+// ══════════════════════════════════════════
+//  CLOCKS
+// ══════════════════════════════════════════
+const CLOCKS=[
+  {id:'clk1',h:3,m:0,  answers:["it's three o'clock","three o'clock","3:00","it's 3:00","3 o'clock"]},
+  {id:'clk2',h:7,m:30, answers:["it's half past seven","half past seven","seven thirty","7:30","it's seven thirty"]},
+  {id:'clk3',h:10,m:15,answers:["it's quarter past ten","quarter past ten","ten fifteen","10:15","it's ten fifteen"]},
+  {id:'clk4',h:1,m:45, answers:["it's quarter to two","quarter to two","one forty-five","one forty five","1:45","it's one forty-five"]},
+  {id:'clk5',h:6,m:20, answers:["it's six twenty","six twenty","6:20","it's 6:20"]},
+];
+
+function drawClock(canvas,h,m){
+  const ctx=canvas.getContext('2d'),W=canvas.width,cx=W/2,r=cx-5;
+  ctx.clearRect(0,0,W,W);
+  ctx.shadowColor='rgba(0,0,0,.12)';ctx.shadowBlur=6;
+  ctx.beginPath();ctx.arc(cx,cx,r,0,2*Math.PI);
+  ctx.fillStyle='#fff';ctx.fill();ctx.shadowBlur=0;
+  ctx.strokeStyle='#c0392b';ctx.lineWidth=2.5;ctx.stroke();
+  for(let i=0;i<60;i++){
+    const a=i*Math.PI/30,maj=i%5===0,inn=maj?r*.78:r*.88;
+    ctx.beginPath();ctx.moveTo(cx+Math.sin(a)*inn,cx-Math.cos(a)*inn);
+    ctx.lineTo(cx+Math.sin(a)*(r-2.5),cx-Math.cos(a)*(r-2.5));
+    ctx.strokeStyle=maj?'#333':'#ddd';ctx.lineWidth=maj?2:1;ctx.stroke();
+  }
+  ctx.fillStyle='#1a1410';ctx.font=`bold ${Math.round(r*.19)}px DM Sans,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  [12,1,2,3,4,5,6,7,8,9,10,11].forEach((n,i)=>{const a=i*Math.PI/6;ctx.fillText(n,cx+Math.sin(a)*r*.6,cx-Math.cos(a)*r*.6);});
+  const hA=((h%12)+m/60)*Math.PI/6,mA=m*Math.PI/30;
+  ctx.beginPath();ctx.moveTo(cx,cx);ctx.lineTo(cx+Math.sin(hA)*r*.46,cx-Math.cos(hA)*r*.46);
+  ctx.strokeStyle='#1a1410';ctx.lineWidth=4;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cx);ctx.lineTo(cx+Math.sin(mA)*r*.7,cx-Math.cos(mA)*r*.7);
+  ctx.strokeStyle='#c0392b';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cx,4,0,2*Math.PI);ctx.fillStyle='#1a1410';ctx.fill();
+}
+
+function buildClocks(){
+  const grid=document.getElementById('clock-grid');
+  grid.innerHTML='';
+  CLOCKS.forEach((clk,i)=>{
+    const card=document.createElement('div');card.className='clock-card';
+    card.innerHTML=`<div class="clock-num">Reloj ${i+1}</div><canvas id="cv-${clk.id}" width="128" height="128" style="border-radius:50%;"></canvas><input type="text" class="fill-input" id="${clk.id}-in" placeholder="It's…" autocomplete="off" style="text-align:center;font-size:.77rem;max-width:100%;padding:5px 7px;"><div class="feedback" id="${clk.id}-fb" style="text-align:center;font-size:.76rem;"></div>`;
+    grid.appendChild(card);
+    requestAnimationFrame(()=>drawClock(document.getElementById(`cv-${clk.id}`),clk.h,clk.m));
+  });
+}
+
+function checkClocks(){
+  let n=0;
+  CLOCKS.forEach(clk=>{
+    const inp=document.getElementById(`${clk.id}-in`),fb=document.getElementById(`${clk.id}-fb`);
+    const val=inp.value.trim().toLowerCase().replace(/[.,!?]/g,'');
+    inp.classList.remove('correct','wrong');
+    const ok=clk.answers.some(a=>val===a.replace(/[.,!?]/g,''));
+    if(ok){inp.classList.add('correct');n++;fb.textContent='✓ Correcto!';fb.className='feedback correct';}
+    else{inp.classList.add('wrong');fb.textContent=`✗ "${clk.answers[0]}"`;fb.className='feedback wrong';}
+    fb.style.display='block';
+  });
+  return n;
+}
+
+// ══════════════════════════════════════════
+//  LISTENING
+// ══════════════════════════════════════════
+const LISTEN_DATA=[
+  {id:'L1',text:"A: What's your name? B: Anika."},
+  {id:'L2',text:"A: Can you spell that? B: A-N-I-K-A."},
+  {id:'L3',text:"A: What's your surname? B: Reeves."},
+  {id:'L4',text:"A: Can you spell that? B: R-E-E-V-E-S."},
+  {id:'L5',text:"A: R-double E-V-E-S. B: That's right."},
+];
+const LISTEN_ORDER=['L1','L2','L3','L4','L5'];
+let dragSrc=null;
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function buildSortable(){
+  const list=document.getElementById('sortable-list');list.innerHTML='';
+  shuffle(LISTEN_DATA).forEach(item=>{
+    const d=document.createElement('div');d.dataset.id=item.id;d.draggable=true;
+    d.style.cssText='background:#fff;border:1.5px solid var(--border);border-radius:7px;padding:9px 13px;display:flex;align-items:center;gap:10px;cursor:grab;font-size:.87rem;transition:all .14s;user-select:none;';
+    d.innerHTML=`<span style="color:var(--muted);">⠿</span><span>${item.text}</span>`;
+    d.addEventListener('dragstart',e=>{dragSrc=d;e.dataTransfer.effectAllowed='move';setTimeout(()=>d.style.opacity='.4',0);});
+    d.addEventListener('dragend',()=>{d.style.opacity='1';updateProgress();});
+    d.addEventListener('dragover',e=>{e.preventDefault();d.style.borderColor='var(--accent2)';});
+    d.addEventListener('dragleave',()=>d.style.borderColor='var(--border)');
+    d.addEventListener('drop',e=>{e.preventDefault();d.style.borderColor='var(--border)';if(dragSrc!==d){const its=[...list.querySelectorAll('[draggable]')];const si=its.indexOf(dragSrc),di=its.indexOf(d);si<di?list.insertBefore(dragSrc,d.nextSibling):list.insertBefore(dragSrc,d);}});
+    list.appendChild(d);
+  });
+}
+
+function checkListening(){
+  const list=document.getElementById('sortable-list');
+  const its=[...list.querySelectorAll('[draggable]')];
+  const ord=its.map(e=>e.dataset.id);let n=0;
+  its.forEach((el,i)=>{
+    if(ord[i]===LISTEN_ORDER[i]){el.style.border='2px solid var(--correct)';el.style.background='#eafaf1';n++;}
+    else{el.style.border='2px solid var(--wrong)';el.style.background='#fdedec';}
+  });
+  const fb=document.getElementById('listen-fb');
+  fb.textContent=n===5?'✓ ¡Perfecto! Todas en orden correcto.':`✗ ${n}/5 en posición correcta. Orden correcto: 1→ What's your name?/Anika  2→ Can you spell?/A-N-I-K-A  3→ What's your surname?/Reeves  4→ Can you spell?/R-E-E-V-E-S  5→ R-double E-V-E-S/That's right.`;
+  fb.className=n===5?'feedback correct':'feedback wrong';fb.style.display='block';
+  return n;
+}
+
+// ══════════════════════════════════════════
+//  TTS
+// ══════════════════════════════════════════
+function speakWord(word,btn){
+  if(!window.speechSynthesis){alert('Tu navegador no soporta audio. Usa Chrome o Edge.');return;}
+  window.speechSynthesis.cancel();
+  document.querySelectorAll('.audio-btn').forEach(b=>b.classList.remove('playing'));
+  btn.classList.add('playing');
+  const u=new SpeechSynthesisUtterance(word);u.lang='en-US';u.rate=0.82;
+  const vs=window.speechSynthesis.getVoices();
+  const v=vs.find(v=>v.lang.startsWith('en')&&!v.name.includes('Google'))||vs.find(v=>v.lang.startsWith('en'));
+  if(v)u.voice=v;
+  u.onend=()=>btn.classList.remove('playing');u.onerror=()=>btn.classList.remove('playing');
+  window.speechSynthesis.speak(u);
+}
+if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+
+// ══════════════════════════════════════════
+//  ANSWER KEYS
+// ══════════════════════════════════════════
+const MCQ_ANS={rq1:'B',rq2:'C',rq3:'A',rq4:'C',rq5:'B'};
+const FILL_ANS={vq1:'parents',vq2:'cousins',vq3:'uncle',vq4:'daughter',vq5:'kitchen',vq6:'bathroom',vq7:'dining room',vq8:'wednesday',vq9:'thursday',vq10:'august',vq11:'january',vq12:'february'};
+const VERB_ANS={pq1:'it',pq2:'our',pq3:'us',pq4:'them',pq5:'her',vb1:'has',vb2:'have',vb3:"doesn't have",vb4:"don't have",vb5:'have'};
+const PREP_ANS={prep1:'at',prep2:'on',prep3:'in',prep4:'in',prep5:'in'};
+const verbSel={};
+
+function selectVerb(btn,group,val){
+  document.querySelectorAll(`#${group} .verb-btn`).forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');verbSel[group]=val;updateProgress();
+}
+
+function updateProgress(){
+  let total=0,done=0;
+  Object.keys(MCQ_ANS).forEach(n=>{total++;if(document.querySelector(`input[name="${n}"]:checked`))done++;});
+  Object.keys(FILL_ANS).forEach(id=>{total++;if(document.getElementById(id+'-in')?.value.trim())done++;});
+  ['gq1-in','gq2a-in','gq2b-in','gq3-in'].forEach(id=>{total++;if(document.getElementById(id)?.value.trim())done++;});
+  Object.keys(VERB_ANS).forEach(g=>{total++;if(verbSel[g])done++;});
+  Object.keys(PREP_ANS).forEach(id=>{total++;if(document.getElementById(id)?.value)done++;});
+  CLOCKS.forEach(c=>{total++;if(document.getElementById(`${c.id}-in`)?.value.trim())done++;});
+  document.getElementById('progressBar').style.width=`${Math.round(done/total*100)}%`;
+}
+document.addEventListener('change',updateProgress);
+document.addEventListener('input',updateProgress);
+
+// ══════════════════════════════════════════
+//  CHECK ALL
+// ══════════════════════════════════════════
+const SECTIONS_DATA=[];
+
+function checkAll(){
+  let score=0;
+  const listenN=checkListening();score+=listenN;
+
+  let readN=0;
+  Object.entries(MCQ_ANS).forEach(([name,cor])=>{
+    const sel=document.querySelector(`input[name="${name}"]:checked`);
+    const fb=document.getElementById(`${name}-fb`);
+    document.querySelectorAll(`input[name="${name}"]`).forEach(o=>{const l=o.closest('.option');l.classList.remove('correct','wrong');if(o.value===cor)l.classList.add('correct');});
+    if(sel){if(sel.value===cor){score++;readN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}else{sel.closest('.option').classList.add('wrong');fb.textContent='✗ Incorrect.';fb.className='feedback wrong';}}
+    else{fb.textContent='⚠ Sin respuesta.';fb.className='feedback wrong';}fb.style.display='block';
+  });
+
+  let dictN=0,seqN=0;
+  Object.entries(FILL_ANS).forEach(([id,cor])=>{
+    const inp=document.getElementById(id+'-in'),fb=document.getElementById(id+'-fb');if(!inp||!fb)return;
+    const val=inp.value.trim().toLowerCase();const isDict=parseInt(id.replace('vq',''))<=7;
+    inp.classList.remove('correct','wrong');
+    if(val===cor){inp.classList.add('correct');score++;if(isDict)dictN++;else seqN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}
+    else if(!val){inp.classList.add('wrong');fb.textContent='⚠ Sin respuesta.';fb.className='feedback wrong';}
+    else{inp.classList.add('wrong');fb.textContent=`✗ "${cor}"`;fb.className='feedback wrong';}
+    fb.style.display='block';
+  });
+
+  let beN=0;
+  const chkIL=(id,ans,fbId)=>{const el=document.getElementById(id),fb=document.getElementById(fbId);el.classList.remove('correct','wrong');if(el.value.trim().toLowerCase()===ans){el.classList.add('correct');score++;beN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}else{el.classList.add('wrong');fb.textContent=`✗ "${ans}"`;fb.className='feedback wrong';}fb.style.display='block';};
+  chkIL('gq1-in','are','gq1-fb');
+  {const a=document.getElementById('gq2a-in'),b=document.getElementById('gq2b-in'),fb=document.getElementById('gq2-fb');let p=0;[[a,'is'],[b,'are']].forEach(([el,ans])=>{el.classList.remove('correct','wrong');if(el.value.trim().toLowerCase()===ans){el.classList.add('correct');p++;score++;beN++;}else el.classList.add('wrong');});fb.textContent=p===2?'✓ Ambas correctas!':'✗ "is" / "are"';fb.className=p===2?'feedback correct':'feedback wrong';fb.style.display='block';}
+  chkIL('gq3-in','is','gq3-fb');
+
+  let pronN=0;
+  [{g:'pq1',fb:'gq4-fb'},{g:'pq2',fb:'gq5-fb'},{g:'pq3',fb:'gq6-fb'},{g:'pq4',fb:'gq7-fb'},{g:'pq5',fb:'gq8-fb'}].forEach(({g,fb:fid})=>{
+    const fb=document.getElementById(fid),btns=document.querySelectorAll(`#${g} .verb-btn`);btns.forEach(b=>b.classList.remove('correct','wrong'));
+    const cor=VERB_ANS[g],ch=verbSel[g];btns.forEach(b=>{if(b.textContent===cor)b.classList.add('correct');});
+    if(ch===cor){score++;pronN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}else if(!ch){fb.textContent='⚠ Sin respuesta.';fb.className='feedback wrong';}else{btns.forEach(b=>{if(b.textContent===ch)b.classList.add('wrong');});fb.textContent=`✗ "${cor}"`;fb.className='feedback wrong';}fb.style.display='block';
+  });
+
+  let hvN=0;
+  [{g:'vb1',fb:'gq9-fb'},{g:'vb2',fb:'gq10-fb'},{g:'vb3',fb:'gq11-fb'},{g:'vb4',fb:'gq12-fb'},{g:'vb5',fb:'gq13-fb'}].forEach(({g,fb:fid})=>{
+    const fb=document.getElementById(fid),btns=document.querySelectorAll(`#${g} .verb-btn`);btns.forEach(b=>b.classList.remove('correct','wrong'));
+    const cor=VERB_ANS[g],ch=verbSel[g];btns.forEach(b=>{if(b.textContent===cor)b.classList.add('correct');});
+    if(ch===cor){score++;hvN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}else if(!ch){fb.textContent='⚠ Sin respuesta.';fb.className='feedback wrong';}else{btns.forEach(b=>{if(b.textContent===ch)b.classList.add('wrong');});fb.textContent=`✗ "${cor}"`;fb.className='feedback wrong';}fb.style.display='block';
+  });
+
+  let prepN=0;
+  [{id:'prep1',fb:'gq14-fb'},{id:'prep2',fb:'gq15-fb'},{id:'prep3',fb:'gq16-fb'},{id:'prep4',fb:'gq17-fb'},{id:'prep5',fb:'gq18-fb'}].forEach(({id,fb:fid})=>{
+    const sel=document.getElementById(id),fb=document.getElementById(fid),cor=PREP_ANS[id];sel.classList.remove('correct','wrong');
+    if(sel.value===cor){sel.classList.add('correct');score++;prepN++;fb.textContent='✓ Correct!';fb.className='feedback correct';}else{sel.classList.add('wrong');fb.textContent=`✗ "${cor}"`;fb.className='feedback wrong';}fb.style.display='block';
+  });
+
+  const clockN=checkClocks();score+=clockN;
+
+  const TOTAL=46,pct=Math.round(score/TOTAL*100);
+  const grade=pct>=90?{l:'A',t:'Excelente',c:'excellent'}:pct>=75?{l:'B',t:'Bien',c:'good'}:pct>=60?{l:'C',t:'Suficiente',c:'average'}:{l:'D',t:'Necesita mejorar',c:'low'};
+
+  examResults={studentFullName,score,TOTAL,pct,grade,listenN,readN,dictN,seqN,beN,pronN,hvN,prepN,clockN,date:new Date()};
+
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('gradeLetter').textContent=`${grade.l} — ${grade.t}`;
+  document.getElementById('gradePct').textContent=`${pct}%`;
+  document.getElementById('liveBadge').innerHTML=`<small>Score</small>${score} / ${TOTAL}`;
+  document.getElementById('student-congrats').innerHTML=`<strong>${studentFullName}</strong>, obtuviste <strong>${score} de ${TOTAL} aciertos</strong>.`;
+  document.getElementById('sc-listen').textContent=`${listenN}/5`;
+  document.getElementById('sc-reading').textContent=`${readN}/5`;
+  document.getElementById('sc-dict').textContent=`${dictN}/7`;
+  document.getElementById('sc-seq').textContent=`${seqN}/5`;
+  document.getElementById('sc-be').textContent=`${beN}/4`;
+  document.getElementById('sc-pron').textContent=`${pronN}/5`;
+  document.getElementById('sc-hv').textContent=`${hvN}/5`;
+  document.getElementById('sc-prep').textContent=`${prepN}/5`;
+  document.getElementById('sc-clock').textContent=`${clockN}/5`;
+
+  const BANDS={
+    excellent:{title:'🌟 ¡Desempeño Excelente!',body:`¡Felicitaciones, ${studentFullName.split(' ')[0]}! Demostraste un dominio sólido de todos los temas evaluados. Tu comprensión lectora, vocabulario y gramática están en un nivel muy alto.`},
+    good:{title:'👍 Buen Desempeño',body:`Buen trabajo, ${studentFullName.split(' ')[0]}. Mostraste un buen entendimiento general, pero hay áreas donde puedes mejorar. Revisa los puntos marcados en rojo.`},
+    average:{title:'📚 Desempeño Suficiente',body:`Alcanzaste el nivel mínimo, ${studentFullName.split(' ')[0]}, pero hay varias áreas que requieren refuerzo. Se recomienda repasar vocabulario, el verbo "to be" y los pronombres.`},
+    low:{title:'⚠️ Se Requiere Refuerzo',body:`${studentFullName.split(' ')[0]}, tu puntaje indica que necesitas dedicar más tiempo al estudio. No te desanimes: identifica las áreas con más errores y practica con ejercicios adicionales.`}
+  };
+  const band=BANDS[grade.c];
+  document.getElementById('feedback-band-wrap').innerHTML=`<div class="feedback-band ${grade.c}"><div class="band-title">${band.title}</div><p>${band.body}</p></div>`;
+
+  const secs=[
+    {name:'🎧 Listening',got:listenN,total:5,good:'Excelente comprensión auditiva.',bad:'Practica escuchar diálogos cortos y presta atención al orden lógico de las conversaciones.'},
+    {name:'📖 Reading',got:readN,total:5,good:'Excelente comprensión lectora.',bad:'Lee el texto con calma. Identifica palabras clave antes de responder.'},
+    {name:'📝 Dictado',got:dictN,total:7,good:'Muy buen dominio del vocabulario oral.',bad:'Repasa la familia y cuartos del hogar. Escucha y repite cada palabra en voz alta.'},
+    {name:'📝 Secuencias',got:seqN,total:5,good:'¡Dominas los días y meses!',bad:'Memoriza la secuencia de días de la semana y meses del año.'},
+    {name:'🔤 To Be',got:beN,total:4,good:'Buen uso de "to be".',bad:'Recuerda: am→I · is→he/she/it · are→you/we/they.'},
+    {name:'🔤 Pronombres',got:pronN,total:5,good:'Excelente manejo de pronombres.',bad:'Distingue sujeto (I, he, she…) de objeto (me, him, her, us, them…).'},
+    {name:'🔤 Have/Has',got:hvN,total:5,good:'¡Muy bien con have/has!',bad:'"Has" → he/she/it. "Have" → I/you/we/they.'},
+    {name:'🔤 Preposiciones',got:prepN,total:5,good:'¡Dominas las preposiciones de tiempo!',bad:'AT → horas · ON → días y fechas · IN → meses, años y períodos del día.'},
+    {name:'🕐 What time is it?',got:clockN,total:5,good:'¡Excelente lectura del reloj analógico!',bad:'Practica: o\'clock (exacta), half past (y media), quarter past/to (cuartos).'},
+  ];
+
+  document.getElementById('section-feedback-list').innerHTML=secs.map(s=>{
+    const ok=s.got/s.total>=0.7;
+    return `<div class="sf-item"><div class="sf-dot ${ok?'good':'bad'}"></div><div><strong>${s.name}: ${s.got}/${s.total}</strong> — ${ok?s.good:s.bad}</div></div>`;
+  }).join('');
+
+  const res=document.getElementById('results');res.style.display='block';
+  setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  document.querySelectorAll('input,select').forEach(el=>el.disabled=true);
+  document.querySelectorAll('.verb-btn,.audio-btn').forEach(el=>{el.disabled=true;el.style.pointerEvents='none';el.style.opacity='.6';});
+  document.querySelectorAll('[draggable]').forEach(el=>{el.draggable=false;el.style.cursor='default';});
+  document.getElementById('submit-btn').disabled=true;document.getElementById('submit-btn').style.opacity='.5';
+
+  try{localStorage.setItem(EXAM_KEY,JSON.stringify({name:studentFullName,score,grade:`${grade.l} (${pct}%)`,date:new Date().toISOString()}));}catch(e){}
+}
+
+// ══════════════════════════════════════════
+//  PDF GENERATION
+// ══════════════════════════════════════════
+function downloadPDF(){
+  if(!examResults){alert('Completa el examen primero.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,M=20,CW=W-M*2;
+  let y=0;
+
+  // ── helpers ──
+  const setFont=(style='normal',size=11)=>{doc.setFont('helvetica',style);doc.setFontSize(size);};
+  const txt=(text,x,yy,opts={})=>doc.text(text,x,yy,opts);
+  const line=(x1,y1,x2,y2,color='#d8cfc0',lw=0.3)=>{doc.setDrawColor(color);doc.setLineWidth(lw);doc.line(x1,y1,x2,y2);};
+  const rect=(x,yy,w,h,fill)=>{doc.setFillColor(fill);doc.setDrawColor(fill);doc.rect(x,yy,w,h,'F');};
+  const newPage=()=>{doc.addPage();y=20;};
+  const checkY=(needed=10)=>{if(y+needed>275)newPage();};
+
+  // ── COVER ──
+  rect(0,0,W,55,'#1a1410');
+  rect(0,55,W,4,'#c0392b');
+  setFont('bold',22);doc.setTextColor('#ffffff');
+  txt('English Exam – Level 1',W/2,22,{align:'center'});
+  setFont('normal',11);doc.setTextColor('#bbbbbb');
+  txt('Reporte de Resultados',W/2,31,{align:'center'});
+
+  // grade circle simulation (filled rectangle)
+  const cx=W/2,cy=80;
+  doc.setDrawColor('#c0392b');doc.setLineWidth(1.5);doc.circle(cx,cy,18,'S');
+  setFont('bold',20);doc.setTextColor('#1a1410');
+  txt(String(examResults.score),cx,cy+2,{align:'center'});
+  setFont('normal',8);doc.setTextColor('#7a6f62');
+  txt(`de ${examResults.TOTAL} pts`,cx,cy+8,{align:'center'});
+
+  const {l,t}=examResults.grade;
+  setFont('bold',16);doc.setTextColor('#c0392b');
+  txt(`${l} — ${t}`,cx,cy+18,{align:'center'});
+  setFont('normal',11);doc.setTextColor('#7a6f62');
+  txt(`${examResults.pct}%`,cx,cy+25,{align:'center'});
+
+  y=115;
+
+  // student info box
+  rect(M,y,CW,28,'#f5f0e8');
+  doc.setDrawColor('#d8cfc0');doc.setLineWidth(0.3);doc.rect(M,y,CW,28,'S');
+  setFont('bold',9);doc.setTextColor('#7a6f62');
+  txt('ALUMNO',M+6,y+7);
+  setFont('bold',13);doc.setTextColor('#1a1410');
+  txt(examResults.studentFullName,M+6,y+16);
+  setFont('normal',8.5);doc.setTextColor('#7a6f62');
+  const d=examResults.date;
+  txt(`Fecha: ${d.toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'})}  ·  Hora: ${d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}`,M+6,y+24);
+  y+=36;
+
+  // ── SECTION SCORES TABLE ──
+  rect(M,y,CW,8,'#1a1410');
+  setFont('bold',9);doc.setTextColor('#ffffff');
+  txt('SECCIÓN',M+4,y+5.5);
+  txt('OBTENIDO',M+CW-50,y+5.5,{align:'center'});
+  txt('TOTAL',M+CW-20,y+5.5,{align:'center'});
+  y+=8;
+
+  const rows=[
+    ['🎧 Listening',examResults.listenN,5],
+    ['📖 Reading',examResults.readN,5],
+    ['📝 Vocabulario – Dictado',examResults.dictN,7],
+    ['📝 Vocabulario – Secuencias',examResults.seqN,5],
+    ['🔤 Grammar – To Be',examResults.beN,4],
+    ['🔤 Grammar – Pronombres',examResults.pronN,5],
+    ['🔤 Grammar – Have/Has',examResults.hvN,5],
+    ['🔤 Grammar – Preposiciones',examResults.prepN,5],
+    ['🕐 What time is it?',examResults.clockN,5],
+  ];
+
+  rows.forEach((r,i)=>{
+    const bg=i%2===0?'#ffffff':'#faf8f4';
+    rect(M,y,CW,7.5,bg);doc.setDrawColor('#d8cfc0');doc.setLineWidth(0.2);doc.rect(M,y,CW,7.5,'S');
+    setFont('normal',8.5);doc.setTextColor('#1a1410');
+    txt(r[0].replace(/[^\x00-\x7F]/g,''),M+4,y+5.2);
+    const pct2=r[2]>0?Math.round(r[1]/r[2]*100):0;
+    const col=pct2>=70?'#1e8449':pct2>=50?'#d4ac0d':'#c0392b';
+    doc.setTextColor(col);setFont('bold',8.5);
+    txt(`${r[1]}`,M+CW-50,y+5.2,{align:'center'});
+    doc.setTextColor('#7a6f62');setFont('normal',8.5);
+    txt(`${r[2]}`,M+CW-20,y+5.2,{align:'center'});
+    y+=7.5;
+  });
+
+  // total row
+  rect(M,y,CW,8.5,'#1a1410');
+  setFont('bold',9);doc.setTextColor('#ffffff');
+  txt('TOTAL',M+4,y+5.8);
+  doc.setTextColor('#f5c6c6');
+  txt(`${examResults.score}`,M+CW-50,y+5.8,{align:'center'});
+  txt(`${examResults.TOTAL}`,M+CW-20,y+5.8,{align:'center'});
+  y+=8.5;
+
+  y+=10;checkY(50);
+
+  // ── FEEDBACK ──
+  const BANDS={
+    excellent:{title:'DESEMPENO EXCELENTE',body:`Felicitaciones, ${examResults.studentFullName.split(' ')[0]}! Demostraste un dominio solido de todos los temas. Tu comprension lectora, vocabulario y gramatica estan en un nivel muy alto.`},
+    good:{title:'BUEN DESEMPENO',body:`Buen trabajo. Mostraste un entendimiento general satisfactorio, pero hay areas de oportunidad. Revisa los temas con menor puntaje.`},
+    average:{title:'DESEMPENO SUFICIENTE',body:`Alcanzaste el nivel minimo de aprobacion, pero hay varias areas que requieren refuerzo. Repasa vocabulario, el verbo "to be" y los pronombres.`},
+    low:{title:'SE REQUIERE REFUERZO',body:`Tu puntaje indica que necesitas dedicar mas tiempo al estudio. Identifica las areas con mas errores y practica con ejercicios adicionales. No te desanimes.`}
+  };
+  const bnd=BANDS[examResults.grade.c];
+  const colors={excellent:'#eafaf1',good:'#eaf4fb',average:'#fefbd8',low:'#fdedec'};
+  const borderColors={excellent:'#1e8449',good:'#2471a3',average:'#d4ac0d',low:'#c0392b'};
+  const bc=borderColors[examResults.grade.c];
+
+  rect(M,y,CW,38,colors[examResults.grade.c]);
+  doc.setDrawColor(bc);doc.setLineWidth(0.8);doc.line(M,y,M,y+38);
+  doc.setDrawColor('#e0e0e0');doc.setLineWidth(0.2);doc.rect(M,y,CW,38,'S');
+  setFont('bold',9.5);doc.setTextColor(bc);
+  txt(bnd.title,M+6,y+8);
+  setFont('normal',8.5);doc.setTextColor('#333333');
+  const lines=doc.splitTextToSize(bnd.body,CW-10);
+  lines.forEach((l,i)=>txt(l,M+6,y+16+i*5.5));
+  y+=46;
+
+  // ── SECTION RECOMMENDATIONS ──
+  checkY(14);
+  setFont('bold',10);doc.setTextColor('#1a1410');
+  txt('RETROALIMENTACION POR SECCION',M,y);
+  y+=2;line(M,y,M+CW,y,'#1a1410',0.5);y+=7;
+
+  const secRecs=[
+    {name:'Listening',got:examResults.listenN,total:5,good:'Excelente comprension auditiva.',bad:'Practica con dialogos cortos. Pon atencion al orden logico de las conversaciones.'},
+    {name:'Reading',got:examResults.readN,total:5,good:'Excelente comprension lectora.',bad:'Lee el texto con calma e identifica palabras clave antes de responder.'},
+    {name:'Dictado',got:examResults.dictN,total:7,good:'Muy buen dominio del vocabulario.',bad:'Repasa familia y cuartos del hogar. Escucha y repite cada palabra.'},
+    {name:'Secuencias',got:examResults.seqN,total:5,good:'Dominas los dias y meses.',bad:'Memoriza la secuencia completa de dias y meses.'},
+    {name:'To Be',got:examResults.beN,total:4,good:'Buen uso del verbo to be.',bad:'am/I · is/he,she,it · are/you,we,they.'},
+    {name:'Pronombres',got:examResults.pronN,total:5,good:'Excelente manejo de pronombres.',bad:'Distingue sujeto (I,he,she) de objeto (me,him,her,us,them).'},
+    {name:'Have/Has',got:examResults.hvN,total:5,good:'Muy bien con have/has.',bad:'has → he/she/it. have → I/you/we/they.'},
+    {name:'Preposiciones',got:examResults.prepN,total:5,good:'Dominas las preposiciones de tiempo.',bad:'AT→horas · ON→dias y fechas · IN→meses, anos, periodos.'},
+    {name:'What time?',got:examResults.clockN,total:5,good:'Excelente lectura del reloj.',bad:'o\'clock (exacta), half past (y media), quarter past/to (cuartos).'},
+  ];
+
+  secRecs.forEach(s=>{
+    checkY(12);
+    const ok=s.got/s.total>=0.7;
+    const dotColor=ok?'#1e8449':'#c0392b';
+    doc.setFillColor(dotColor);doc.circle(M+2.5,y-0.5,2,'F');
+    setFont('bold',8.5);doc.setTextColor('#1a1410');
+    txt(`${s.name}: ${s.got}/${s.total}`,M+7,y);
+    setFont('normal',8);doc.setTextColor('#555');
+    const comment=ok?s.good:s.bad;
+    const cl=doc.splitTextToSize(comment,CW-10);
+    cl.forEach((l,i)=>txt(l,M+7,y+4.5+i*4.5));
+    y+=5+cl.length*4.5+3;
+  });
+
+  // ── FOOTER ──
+  const pages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);
+    line(M,284,M+CW,284,'#d8cfc0',0.3);
+    setFont('normal',7.5);doc.setTextColor('#aaaaaa');
+    txt(`English Exam – Level 1  |  ${examResults.studentFullName}  |  Pág. ${p} de ${pages}`,W/2,289,{align:'center'});
+  }
+
+  doc.save(`Examen_${examResults.studentFullName.replace(/ /g,'_')}.pdf`);
+}
+</script>
+</body>
+</html>
